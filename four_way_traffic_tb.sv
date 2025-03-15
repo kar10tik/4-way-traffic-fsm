@@ -19,19 +19,32 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-
-module four_way_traffic_tb( );
+module four_way_traffic_tb;
     logic CLK = 1'b0, RST = 1'b1; 
-    reg[1:0] N_LIGHTS, S_LIGHTS, E_LIGHTS, W_LIGHTS;
-    four_way_traffic fwt (.clk(CLK), .rst(RST), .n_lights(N_LIGHTS),
-      .s_lights(S_LIGHTS), .e_lights(E_LIGHTS), .w_lights(W_LIGHTS));
-    
-    initial 
-    begin 
-    #2 RST = 1'b0;
-    forever #5 CLK =~ CLK;
-    end
-    
+    logic [1:0] N_LIGHTS, S_LIGHTS, E_LIGHTS, W_LIGHTS;
 
+    // Instantiate DUT
+    four_way_traffic fwt (
+        .clk(CLK), .rst(RST),
+        .n_lights(N_LIGHTS), .s_lights(S_LIGHTS),
+        .e_lights(E_LIGHTS), .w_lights(W_LIGHTS)
+    );
+
+    // Generate clock signal
+    always #5 CLK = ~CLK;
+
+    // Test sequence
+    initial begin
+
+        $display("Reset");
+        #5 RST = 1'b0;
+
+        $monitor("Time = %0t, State: N=%b, S=%b, E=%b, W=%b", 
+                 $time, N_LIGHTS, S_LIGHTS, E_LIGHTS, W_LIGHTS);
+
+        #200;
+        $display("Simulation complete");
+        $stop;
+    end
 
 endmodule

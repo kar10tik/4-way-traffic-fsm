@@ -21,97 +21,103 @@
 
 
 module four_way_traffic(
-    input logic clk, rst, output reg[1:0] n_lights = 2'b00,
-    s_lights = 2'b00, e_lights = 2'b00, w_lights = 2'b00);
+    input logic clk, rst,
+    output logic [1:0] n_lights, s_lights, e_lights, w_lights
+);
     
-logic [2:0] state = 3'b000, count = 3'b000;
-parameter [2:0] north = 3'b000, north_y = 3'b001,
-south = 3'b010, south_y = 3'b011, east = 3'b100,
-east_y = 3'b101, west = 3'b110, west_y = 3'b111;
+logic [2:0] count = 3'b000;
+typedef enum logic [2:0] {
+    NORTH = 3'b000, NORTH_Y = 3'b001,
+    SOUTH = 3'b010, SOUTH_Y = 3'b011,
+    EAST = 3'b100, EAST_Y = 3'b101,
+    WEST = 3'b110, WEST_Y = 3'b111
+} state_t;
+
+state_t state;
     
 always @(negedge rst)
 begin
 if (rst) begin
-    state <= north;
+    state <= NORTH;
     count <= 3'b000;
     end
 end
 
 always @(posedge clk) begin
     case(state)
-        north: begin 
+        NORTH: begin 
             if (count == 3'b111) begin
                 count <= 3'b000;
-                state <= north_y; end
+                state <= NORTH_Y; end
             else begin
-                state <= north; 
+                state <= NORTH; 
                 count++; end
         end
-        north_y: begin
+        NORTH_Y: begin
         if (count == 3'b111) begin
                 count <= 3'b000;
-                state <= south;
+                state <= SOUTH;
             end
             else begin
-                state <= north_y; 
+                state <= NORTH_Y; 
                 count++; end
         end
-        south: begin
+        SOUTH: begin
         if (count == 3'b111) begin
                 count <= 3'b000;
-                state <= south_y;
+                state <= SOUTH_Y;
             end
             else begin
-                state <= south; 
+                state <= SOUTH; 
                 count++; end
         end
-        south_y: begin
+        SOUTH_Y: begin
         if (count == 3'b111) begin
                 count <= 3'b000;
-                state <= east;
+                state <= EAST;
             end
             else begin
-                state <= south_y; 
+                state <= SOUTH_Y; 
                 count++; end
         end
-        east: begin
+        EAST: begin
         if (count == 3'b111) begin
                 count <= 3'b000;
-                state <= east_y;
+                state <= EAST_Y;
             end
             else begin
-                state <= east; 
+                state <= EAST; 
                 count++; end
         end
-        east_y: begin
+        EAST_Y: begin
         if (count == 3'b111) begin
                 count <= 3'b000;
-                state <= west;
+                state <= WEST;
             end
             else begin
-                state <= east_y; 
+                state <= EAST_Y; 
                 count++; end
         end
-        west: begin
+        WEST: begin
         if (count == 3'b111) begin
                 count <= 3'b000;
-                state <= west_y;
+                state <= WEST_Y;
             end
             else begin
-                state <= west; 
+                state <= WEST; 
                 count++; end
         end
-        west_y: begin
+        WEST_Y: begin
         if (count == 3'b111) begin
                 count <= 3'b000;
-                state <= north;
+                state <= NORTH;
             end
             else begin
-                state <= west_y; 
+                state <= WEST_Y; 
                 count++; end
         end
         default: begin 
-            state <= north;
+            state <= NORTH;
             count <= 3'b000; end        
     endcase
 end
@@ -120,46 +126,47 @@ end
 always @(state)
 begin
     case(state)
-        north: begin
+        NORTH: begin
             n_lights = 2'b10; 
             s_lights = 2'b00;
             e_lights = 2'b00;
             w_lights = 2'b00; end
-        north_y: begin
+        NORTH_Y: begin
             n_lights = 2'b01; 
             s_lights = 2'b00;
             e_lights = 2'b00;
             w_lights = 2'b00; end
-        south: begin
+        SOUTH: begin
             n_lights = 2'b00; 
             s_lights = 2'b10;
             e_lights = 2'b00;
             w_lights = 2'b00; end
-         south_y: begin
+         SOUTH_Y: begin
             n_lights = 2'b00; 
             s_lights = 2'b01;
             e_lights = 2'b00;
             w_lights = 2'b00; end
-         east: begin
+         EAST: begin
             n_lights = 2'b00; 
             s_lights = 2'b00;
             e_lights = 2'b10;
             w_lights = 2'b00; end
-         east_y: begin
+         EAST_Y: begin
             n_lights = 2'b00; 
             s_lights = 2'b00;
             e_lights = 2'b01;
             w_lights = 2'b00; end
-         west: begin
+         WEST: begin
             n_lights = 2'b00; 
             s_lights = 2'b00;
             e_lights = 2'b00;
             w_lights = 2'b10; end
-         west_y: begin
+         WEST_Y: begin
             n_lights = 2'b00; 
             s_lights = 2'b00;
             e_lights = 2'b00;
             w_lights = 2'b01; end
+          
     endcase
 end
 endmodule
