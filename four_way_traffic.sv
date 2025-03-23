@@ -34,16 +34,13 @@ typedef enum logic [2:0] {
 } state_t;
 
 state_t state;
-    
-always @(negedge rst)
-begin
-if (rst) begin
+
+always_ff @(posedge clk or negedge rst) begin
+    if (rst) begin
     state <= NORTH;
     count <= 3'b000;
     end
-end
-
-always @(posedge clk) begin
+    else begin
     case(state)
         NORTH: begin 
             if (count == 3'b111) begin
@@ -120,6 +117,7 @@ always @(posedge clk) begin
             state <= NORTH;
             count <= 3'b000; end        
     endcase
+    end
 end
 
     

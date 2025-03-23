@@ -2,7 +2,7 @@
 //fwt: four_way_traffic
 //Transaction class
 class fwt_transaction;
-    rand logic rst;
+    rand bit rst;
     logic [1:0] n_lights, s_lights, e_lights, w_lights;
 
     function void display();
