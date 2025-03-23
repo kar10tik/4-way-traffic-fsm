@@ -135,10 +135,10 @@ module four_way_traffic_tb;
     mailbox #(fwt_transaction) mon2scb = new();
 
     // Testbench components
-    fwt_generator gen(gen2drv);
-    fwt_driver drv(gen2drv, tb_if);
-    fwt_monitor mon(mon2scb, tb_if);
-    fwt_scoreboard scb(mon2scb);
+    fwt_generator gen = new(gen2drv);
+    fwt_driver drv = new(gen2drv, tb_if);
+    fwt_monitor mon = new(mon2scb, tb_if);
+    fwt_scoreboard scb = new(mon2scb);
 
     initial begin
         $display("Starting Traffic Light FSM Testbench...");
