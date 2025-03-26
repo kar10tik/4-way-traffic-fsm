@@ -19,25 +19,19 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-
-module four_way_traffic(
+import states::*
+module four_way_traffic #(parameter START_STATE = NORTH)(
     input logic clk, rst,
     output logic [1:0] n_lights, s_lights, e_lights, w_lights
 );
     
 logic [2:0] count = 3'b000;
-typedef enum logic [2:0] {
-    NORTH = 3'b000, NORTH_Y = 3'b001,
-    SOUTH = 3'b010, SOUTH_Y = 3'b011,
-    EAST = 3'b100, EAST_Y = 3'b101,
-    WEST = 3'b110, WEST_Y = 3'b111
-} state_t;
 
 state_t state;
 
 always_ff @(posedge clk or negedge rst) begin
     if (rst) begin
-    state <= NORTH;
+    state <= START_STATE;
     count <= 3'b000;
     end
     else begin
