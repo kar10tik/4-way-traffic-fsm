@@ -6,7 +6,6 @@ import states::*;
 class fwt_transaction;
     rand bit rst;
     randc state_t init_state;
-    //constraint rst_gen {solve rst before state_t;}
     logic [1:0] n_lights, s_lights, e_lights, w_lights;
 endclass
 
@@ -59,8 +58,8 @@ class fwt_driver;
             vif.rst = tr.rst;
             vif.init_state = tr.init_state;          
             $display("[DRV] Driven to DUT: reset: %b, initial state: %s", vif.rst, vif.init_state.name());
-            #5; // Apply reset for a few cycles
-            vif.rst = 0;
+            #10; //#5; // Apply reset for a few cycles
+            //vif.rst = 0;
         end
     endtask
 endclass
@@ -79,12 +78,12 @@ class fwt_monitor;
     task run();
         forever begin
             tr = new();
-            #5;
             tr.n_lights = vif.n_lights;
             tr.s_lights = vif.s_lights;
             tr.e_lights = vif.e_lights;
             tr.w_lights = vif.w_lights;
             $display("[MON] Received N_lights: %b, s_lights: %b, e_lights:%b, w_lights:%b", tr.n_lights, tr.s_lights, tr.e_lights, tr.w_lights);
+            #10; 
             mon2scb.put(tr);
         end
     endtask
@@ -112,11 +111,11 @@ class fwt_scoreboard;
                 $display("[SCB] South Yellow detected.");
             else if (tr.e_lights == 2'b10)
                 $display("[SCB] East Green detected.");
-            else if (tr.e_lights == 2'b10)
+            else if (tr.e_lights == 2'b01)
                 $display("[SCB] East Yellow detected.");
             else if (tr.w_lights == 2'b10)
                 $display("[SCB] West Green detected.");
-            else if (tr.w_lights == 2'b10)
+            else if (tr.w_lights == 2'b01)
                 $display("[SCB] West Yellow detected.");
             #10;
         end
@@ -157,7 +156,7 @@ module four_way_traffic_tb;
             drv.run();
             mon.run();
             scb.run();
-        join//_none
+        join_none
 
         #200 $finish;
     end
