@@ -1,5 +1,6 @@
 //Generator-Driver-Monitor-Scoreboard-style testbench implementation
 //fwt: four_way_traffic
+
 //Transaction class
 class fwt_transaction;
     rand bit rst;
@@ -13,8 +14,8 @@ endclass
 
 
 //Interface
-interface fwt_if(input logic clk);
-    logic rst;
+interface fwt_if(input bit clk);
+    bit rst;
     logic [1:0] n_lights, s_lights, e_lights, w_lights;
 endinterface
 
@@ -100,7 +101,6 @@ class fwt_scoreboard;
         fwt_transaction tr;
         forever begin
             mon_mbox.get(tr);
-            // Example: Expected sequence checking
             if (tr.n_lights == 2'b10)
                 $display("[SCB] North Green detected.");
             else if (tr.n_lights == 2'b01)
@@ -117,7 +117,7 @@ endclass
 
 
 module four_way_traffic_tb;
-    logic clk = 0;
+    bit clk = 0;
     always #5 clk = ~clk;
 
     // Interface instance
