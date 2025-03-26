@@ -1,14 +1,16 @@
 //Generator-Driver-Monitor-Scoreboard-style testbench implementation
 //fwt: four_way_traffic
 
+import states::*;
 //Transaction class
 class fwt_transaction;
     rand bit rst;
-    logic [1:0] n_lights, s_lights, e_lights, w_lights;
+    randc state_t state;
+    //logic [1:0] n_lights, s_lights, e_lights, w_lights;
 
     function void display();
-        $display("[TRANS] Reset: %b, N: %b, S: %b, E: %b, W: %b", 
-                 rst, n_lights, s_lights, e_lights, w_lights);
+        $display("[TRANS] Reset: %b, State: %s", 
+                 rst, state.name());
     endfunction
 endclass
 
@@ -16,6 +18,7 @@ endclass
 //Interface
 interface fwt_if(input bit clk);
     bit rst;
+    state_t state;
     logic [1:0] n_lights, s_lights, e_lights, w_lights;
 endinterface
 
@@ -56,6 +59,7 @@ class fwt_driver;
         forever begin
             drv_mbox.get(tr);
             vif.rst = tr.rst;
+            vif.state = tr.state;
             #5; // Apply reset for a few cycles
             vif.rst = 0;
         end
@@ -124,7 +128,7 @@ module four_way_traffic_tb;
     fwt_if tb_if (clk);
 
     // DUT instance
-    four_way_traffic dut (
+    four_way_traffic dut #(tb_if.state)(
         .clk(tb_if.clk), .rst(tb_if.rst),
         .n_lights(tb_if.n_lights), .s_lights(tb_if.s_lights),
         .e_lights(tb_if.e_lights), .w_lights(tb_if.w_lights)
