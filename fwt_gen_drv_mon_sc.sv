@@ -5,12 +5,12 @@ import states::*;
 //Transaction class
 class fwt_transaction;
     rand bit rst;
-    randc state_t state;
+    randc state_t init_state;
     //logic [1:0] n_lights, s_lights, e_lights, w_lights;
 
     function void display();
-        $display("[TRANS] Reset: %b, State: %s", 
-                 rst, state.name());
+        $display("[TRANS] Reset: %b, Initial state: %s", 
+                 rst, init_state.name());
     endfunction
 endclass
 
@@ -18,7 +18,7 @@ endclass
 //Interface
 interface fwt_if(input bit clk);
     bit rst;
-    state_t state;
+    state_t init_state;
     logic [1:0] n_lights, s_lights, e_lights, w_lights;
 endinterface
 
@@ -59,7 +59,7 @@ class fwt_driver;
         forever begin
             drv_mbox.get(tr);
             vif.rst = tr.rst;
-            vif.state = tr.state;
+            vif.init_state = tr.init_state;
             #5; // Apply reset for a few cycles
             vif.rst = 0;
         end
@@ -111,8 +111,16 @@ class fwt_scoreboard;
                 $display("[SCB] North Yellow detected.");
             else if (tr.s_lights == 2'b10)
                 $display("[SCB] South Green detected.");
-            else
-                $display("[SCB] Unexpected state!");
+            else if (tr.s_lights == 2'b01)
+                $display("[SCB] South Yellow detected.");
+            else if (tr.e_lights == 2'b10)
+                $display("[SCB] East Green detected.");
+            else if (tr.e_lights == 2'b10)
+                $display("[SCB] East Yellow detected.");
+            else if (tr.w_lights == 2'b10)
+                $display("[SCB] West Green detected.");
+            else if (tr.w_lights == 2'b10)
+                $display("[SCB] West Yellow detected.");
 
             #10;
         end
@@ -128,8 +136,9 @@ module four_way_traffic_tb;
     fwt_if tb_if (clk);
 
     // DUT instance
-    four_way_traffic dut #(tb_if.state)(
+    four_way_traffic dut (
         .clk(tb_if.clk), .rst(tb_if.rst),
+        .start_state(tb_if.init_state),
         .n_lights(tb_if.n_lights), .s_lights(tb_if.s_lights),
         .e_lights(tb_if.e_lights), .w_lights(tb_if.w_lights)
     );
