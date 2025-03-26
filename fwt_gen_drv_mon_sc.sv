@@ -6,12 +6,8 @@ import states::*;
 class fwt_transaction;
     rand bit rst;
     randc state_t init_state;
-    //logic [1:0] n_lights, s_lights, e_lights, w_lights;
-
-    function void display();
-        $display("[TRANS] Reset: %b, Initial state: %s", 
-                 rst, init_state.name());
-    endfunction
+    //constraint rst_gen {solve rst before state_t;}
+    logic [1:0] n_lights, s_lights, e_lights, w_lights;
 endclass
 
 
@@ -26,17 +22,19 @@ endinterface
 //Generator class
 class fwt_generator;
     mailbox #(fwt_transaction) gen2drv;
+    fwt_transaction tr;
     
     function new(mailbox #(fwt_transaction) m);
         gen2drv = m;
     endfunction
 
     task run();
-        fwt_transaction tr;
         repeat (10) begin
             tr = new();
-            if (!tr.randomize()) $fatal("Randomization failed!");
-            tr.display();
+            if (!tr.randomize()) 
+                $fatal(1, "Randomization failed!");
+            $display("[GEN] Generated reset: %b, initial state: %s", 
+                 tr.rst, tr.init_state.name());
             gen2drv.put(tr);
             #10; // Delay before next transaction
         end
@@ -48,18 +46,19 @@ endclass
 class fwt_driver;
     virtual fwt_if vif;
     mailbox #(fwt_transaction) drv_mbox;
-
+    fwt_transaction tr;
+    
     function new(mailbox #(fwt_transaction) m, virtual fwt_if vif);
         drv_mbox = m;
         this.vif = vif;
     endfunction
 
     task run();
-        fwt_transaction tr;
         forever begin
             drv_mbox.get(tr);
             vif.rst = tr.rst;
-            vif.init_state = tr.init_state;
+            vif.init_state = tr.init_state;          
+            $display("[DRV] Driven to DUT: reset: %b, initial state: %s", vif.rst, vif.init_state.name());
             #5; // Apply reset for a few cycles
             vif.rst = 0;
         end
@@ -71,14 +70,13 @@ endclass
 class fwt_monitor;
     virtual fwt_if vif;
     mailbox #(fwt_transaction) mon2scb;
-
+    fwt_transaction tr;
     function new(mailbox #(fwt_transaction) m, virtual fwt_if vif);
         mon2scb = m;
         this.vif = vif;
     endfunction
 
     task run();
-        fwt_transaction tr;
         forever begin
             tr = new();
             #5;
@@ -86,7 +84,7 @@ class fwt_monitor;
             tr.s_lights = vif.s_lights;
             tr.e_lights = vif.e_lights;
             tr.w_lights = vif.w_lights;
-            tr.display();
+            $display("[MON] Received N_lights: %b, s_lights: %b, e_lights:%b, w_lights:%b", tr.n_lights, tr.s_lights, tr.e_lights, tr.w_lights);
             mon2scb.put(tr);
         end
     endtask
@@ -96,13 +94,12 @@ endclass
 //Scoreboard class
 class fwt_scoreboard;
     mailbox #(fwt_transaction) mon_mbox;
-    
+    fwt_transaction tr;
     function new(mailbox #(fwt_transaction) m);
         mon_mbox = m;
     endfunction
 
     task run();
-        fwt_transaction tr;
         forever begin
             mon_mbox.get(tr);
             if (tr.n_lights == 2'b10)
@@ -121,7 +118,6 @@ class fwt_scoreboard;
                 $display("[SCB] West Green detected.");
             else if (tr.w_lights == 2'b10)
                 $display("[SCB] West Yellow detected.");
-
             #10;
         end
     endtask
@@ -161,7 +157,7 @@ module four_way_traffic_tb;
             drv.run();
             mon.run();
             scb.run();
-        join_none
+        join//_none
 
         #200 $finish;
     end
